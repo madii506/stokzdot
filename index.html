@@ -11,10 +11,10 @@
 <meta property="og:image" content="https://stokzdot.vercel.app/assets/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d0724">
-<link rel="icon" href="/assets/img/stokz.ico?v=2" sizes="48x48">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/stokz-32.png?v=2">
-<link rel="icon" type="image/png" sizes="192x192" href="/assets/img/stokz-192.png?v=2">
-<link rel="apple-touch-icon" href="/assets/img/stokz-180.png?v=2">
+<link rel="icon" href="/assets/img/stokz.ico?v=3" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/stokz-32.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/img/stokz-192.png?v=3">
+<link rel="apple-touch-icon" href="/assets/img/stokz-180.png?v=3">
 <link rel="preload" href="/assets/fonts/bowlby.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/unbounded.woff2" as="font" type="font/woff2" crossorigin>
 <script>document.documentElement.classList.add('js')</script>
@@ -80,15 +80,6 @@ a{color:inherit;text-decoration:none}
 .tag .u{color:var(--g)}.tag .d{color:var(--r)}
 .tag .lg{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;background:rgba(255,255,255,.1);font:800 9px/1 Unbounded,sans-serif}
 @keyframes rise{0%{opacity:0;transform:translate(-50%,-80%) scale(.9)}12%{opacity:1;transform:translate(-50%,-100%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,calc(-100% - 120px)) scale(.98)}}
-/* the tape */
-.tape{position:fixed;left:0;right:0;bottom:0;height:42px;z-index:5;background:linear-gradient(180deg,rgba(10,5,28,.2),rgba(10,5,28,.78));border-top:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);overflow:hidden;opacity:0;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-.entered .tape.ok{animation:fin 1s var(--e) forwards;animation-delay:calc(var(--d0) + 2s)}
-.tape-in{display:flex;width:max-content;height:100%;align-items:center;animation:tape var(--dur,90s) linear infinite}
-.tape:hover .tape-in{animation-play-state:paused}
-@keyframes tape{to{transform:translateX(-50%)}}
-.tk{display:inline-flex;align-items:center;gap:8px;padding:0 20px;font:600 12px/1 JBM,monospace;color:var(--ink2);border-right:1px solid rgba(255,255,255,.07);height:100%}
-.tk b{color:var(--ink);letter-spacing:.06em}
-.tk .u{color:var(--g)}.tk .d{color:var(--r)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (max-width:700px){
   .top{padding:14px 16px;grid-template-columns:1fr auto}
@@ -99,7 +90,6 @@ a{color:inherit;text-decoration:none}
   .cta{flex-direction:column;align-items:center;width:100%;max-width:320px}
   .btn{width:100%;justify-content:center;height:52px}
   .wm{transform:translateY(-8vh)}.feat,.cta{transform:translateY(-8vh)}
-  .tape{height:38px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.wm .l,.btn,.mkt,.links,.feat span{opacity:1!important;transform:none!important}#tags{display:none}}
 </style>
@@ -122,7 +112,6 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 <div id="tags" aria-hidden="true"></div>
-<div class="tape" id="tapeBox" aria-label="Live stock prices"><div class="tape-in" id="tape"></div></div>
 <p class="sr" aria-live="polite" id="live"></p>
 <script src="/assets/js/config.js?v=s1"></script>
 <script type="module">
@@ -168,15 +157,13 @@ if (gl) import('/assets/js/stokz3d.js?v=s4').then(m => {
   if (stocks.length) city.setTicker(stocks);
   if (!root.classList.contains('intro')) city.skip();
 }).catch(() => { root.classList.remove('gl', 'intro'); flapAll(0); });
-// live prices: the tape and the tags
+// live prices: the towers' LED screens and the tags
 const fx = (v) => v >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 0 }) : v >= 1 ? v.toFixed(2) : v.toPrecision(3);
 let stocks = [];
 async function prices() {
   try { const r = await fetch('/api/m?a=prices', { cache: 'no-store' }); if (!r.ok) throw 0; const j = await r.json(); stocks = (j.stocks || []).filter(s => isFinite(s.usd) && s.usd > 0 && !s.thin); } catch { return; }
   if (!stocks.length) return;
-  const row = stocks.map(s => { const up = (s.ch24 || 0) >= 0; return `<span class="tk"><b>${s.sym}</b>$${fx(s.usd)}<span class="${up ? 'u' : 'd'}">${up ? '▲' : '▼'} ${Math.abs(s.ch24 || 0).toFixed(2)}%</span></span>`; }).join('');
   city && city.setTicker(stocks);
-  $('#tape').innerHTML = row + row; $('#tape').style.setProperty('--dur', Math.max(50, stocks.length * 2.2) + 's'); $('#tapeBox').classList.add('ok');
 }
 prices(); setInterval(prices, 60000);
 let side = -1;

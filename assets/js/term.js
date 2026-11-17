@@ -88,6 +88,36 @@
     if (first) el.style.setProperty('--dur', Math.max(28, el.scrollWidth / 2 / 52) + 's');
   }
   setInterval(() => { if (S.view === 'board') renderLed(); }, 20000);
+  // the floor under the board: movers both ways, the deepest markets, breadth, the session, the market map
+  const mvRow = s => { const ch = s.ch24 || 0; return `<button class="mv" ${s.kind === 'city' ? 'data-go="#city"' : `data-trade="${esc(s.sym)}"`} title="${esc(s.name || s.sym)}"><b>${esc(s.sym)}</b><span class="p">${px(s.usd)}</span><span class="c ${ch > 0.005 ? 'up' : ch < -0.005 ? 'dn' : 'fl'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(2)}%</span></button>`; };
+  function renderFloor(st, city) {
+    const up = $('#bdUp'); if (!up) return;
+    const L = st.filter(s => s.ch24 != null);
+    up.innerHTML = L.filter(s => s.ch24 > 0).sort((a, b) => b.ch24 - a.ch24).slice(0, 5).map(mvRow).join('') || '<div class="empty">nothing up today</div>';
+    $('#bdDn').innerHTML = L.filter(s => s.ch24 < 0).sort((a, b) => a.ch24 - b.ch24).slice(0, 5).map(mvRow).join('') || '<div class="empty">nothing down today</div>';
+    $('#bdDeep').innerHTML = st.slice().sort((a, b) => (b.liq || 0) - (a.liq || 0)).slice(0, 5).map(mvRow).join('');
+    const nu = L.filter(s => s.ch24 > 0.005).length, nd = L.filter(s => s.ch24 < -0.005).length, nf = L.length - nu - nd;
+    const avg = L.length ? L.reduce((a, s) => a + s.ch24, 0) / L.length : 0;
+    $('#bdBreadth').innerHTML = `<div class="brd-bar"><i class="u" style="flex-grow:${nu}"></i><i class="f" style="flex-grow:${nf}"></i><i class="d" style="flex-grow:${nd}"></i></div><div class="brd-n"><span class="u">${nu} up</span><span>${nf} flat</span><span class="d">${nd} down</span></div><div class="brd-avg">equal weight, 24h<b class="${avg >= 0 ? 'up' : 'dn'}">${avg >= 0 ? '+' : ''}${avg.toFixed(2)}%</b></div>`;
+    renderSess();
+    const all = st.concat(city).filter(s => s.usd != null), tot = all.reduce((a, s) => a + Math.sqrt(s.liq || s.mcap || 1), 0) || 1;
+    $('#bdMap').innerHTML = all.sort((a, b) => (b.liq || b.mcap || 0) - (a.liq || a.mcap || 0)).map((s, i) => {
+      const ch = s.ch24 || 0, k = Math.min(1, Math.abs(ch) / 4), w = Math.sqrt(s.liq || s.mcap || 1) / tot * 100;
+      const bg = ch >= 0 ? `rgb(${Math.round(18 + 10 * k)},${Math.round(40 + 120 * k)},${Math.round(32 + 52 * k)})` : `rgb(${Math.round(48 + 150 * k)},${Math.round(20 + 14 * k)},${Math.round(38 + 26 * k)})`;
+      return `<button class="hm${i < 5 ? ' big' : ''}" style="flex-basis:${Math.max(4, w * 2.2).toFixed(2)}%;background:${bg}" ${s.kind === 'city' ? 'data-go="#city"' : `data-trade="${esc(s.sym)}"`} title="${esc(s.name || s.sym)}"><b>${esc(s.sym)}</b><span>${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</span></button>`;
+    }).join('');
+  }
+  // New York's trading day on one bar: pre-market 4:00, the bell 9:30, the close 16:00, after hours to 20:00
+  function renderSess() {
+    const el = $('#bdSess'); if (!el) return;
+    const p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+    const g = k => p.find(x => x.type === k).value, d = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(g('weekday')), m = (+g('hour') % 24) * 60 + +g('minute');
+    const wk = d >= 1 && d <= 5, open = wk && m >= 570 && m < 960, pos = Math.min(100, Math.max(0, (m - 240) / 960 * 100));
+    const phase = !wk ? 'weekend' : m < 240 ? 'overnight' : m < 570 ? 'pre-market' : m < 960 ? 'regular hours' : m < 1200 ? 'after hours' : 'overnight';
+    el.innerHTML = `<div class="ses-bar"><i class="pre" style="flex:330"></i><i class="reg${open ? ' on' : ''}" style="flex:390"></i><i class="aft" style="flex:240"></i>${wk && m >= 240 && m < 1200 ? `<span class="now" style="left:${pos}%"></span>` : ''}</div><div class="ses-l"><span style="left:0">4:00</span><span style="left:34.4%">9:30</span><span style="left:75%">16:00</span><span style="left:100%">20:00</span></div><div class="ses-s">${nyse()}<em>${phase} in New York · stokz trades 24/7</em></div>`;
+  }
+  setInterval(() => { if (S.view === 'board') renderSess(); }, 30000);
+  $('.bd-page') && $('.bd-page').addEventListener('click', e => { if (e.target.closest('#bdGrid')) return; const g = e.target.closest('[data-go]'); if (g) { location.hash = g.dataset.go; return; } const t = e.target.closest('[data-trade]'); if (t) location.hash = '#trade/' + t.dataset.trade; });
   const pxl = v => { const n = String(px(v)).length; return n >= 9 ? ' xl' : n >= 8 ? ' l' : ''; };   // long prices step down a size so they never clip
   // unlit modules fill the last row, like the empty slots on a real board
   function fillBoard() {
@@ -110,7 +140,7 @@
     const adv = st.filter(s => (s.ch24 || 0) > 0).length, dec = st.filter(s => (s.ch24 || 0) < 0).length;
     const best = st.slice().sort((a, b) => (b.ch24 || 0) - (a.ch24 || 0))[0];
     $('#bdStats').innerHTML = `<div class="bd-st">listings<b>${st.length + city.length}</b></div><div class="bd-st">advancing<b class="up">${adv}</b></div><div class="bd-st">declining<b class="dn">${dec}</b></div>` + (best ? `<div class="bd-st">top mover<b class="${cls(best.ch24)}">${esc(best.sym)} ${pc(best.ch24)}</b></div>` : '');
-    renderLed();
+    renderLed(); renderFloor(st, city);
     const key = BD.f + '|' + BD.s + '|' + L.map(s => s.sym).join(',');
     if (key !== BD.key || !g.querySelector('.bt')) {
       // a new set or order: lay the board out again and let the cells come on in a wave

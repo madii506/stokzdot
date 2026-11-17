@@ -8,8 +8,8 @@
 <meta property="og:title" content="stokz terminal">
 <meta property="og:description" content="The first in-game stock market. The big board, real stocks, perps and IPOs for the city's companies.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="/assets/img/og.jpg">
-<meta name="twitter:image" content="/assets/img/og.jpg">
+<meta property="og:image" content="https://stokzdot.vercel.app/assets/img/og.jpg">
+<meta name="twitter:image" content="https://stokzdot.vercel.app/assets/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b0720">
 <link rel="icon" href="/assets/img/stokz.ico?v=2" sizes="48x48">
@@ -1204,6 +1204,43 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
   [data-r]{min-height:44px;min-width:44px}
   .qs a{display:inline-flex;align-items:center;min-height:44px}
 }
+
+/* ----- the floor under the board: movers, breadth, the New York session, the market map ----- */
+.bd-floor{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.15fr);gap:10px;margin-top:12px}
+.bd-card{position:relative;border-radius:12px;padding:14px 14px 12px;background:radial-gradient(circle,#160f20 40%,transparent 46%) 0 0/3px 3px,#060409;border:1px solid #21182e}
+.bd-ch{display:flex;align-items:center;gap:8px;margin-bottom:10px;font:700 10px/1 JBM,monospace;letter-spacing:.2em;text-transform:uppercase;color:#8d7fab}
+.bd-ch i{width:7px;height:7px;border-radius:2px;background:#fff1d6}.bd-ch i.u{background:#3ddc84}.bd-ch i.d{background:#ff4d6d}
+.bd-mv{display:grid;gap:2px}
+.bd-mv .mv{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:baseline;gap:10px;width:100%;min-height:38px;padding:8px 8px;border-radius:6px;text-align:left;color:inherit;font:inherit;background:none;cursor:pointer;transition:background .2s}
+.bd-mv .mv:hover{background:rgba(255,255,255,.05)}
+.bd-mv .mv b{font:800 12.5px/1 Unbounded,sans-serif;letter-spacing:.05em;color:#efe5d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-mv .mv .p{font:800 15px/1 JBM,monospace;color:#ffb03d}
+.bd-mv .mv .c{font:800 12px/1 JBM,monospace;min-width:62px;text-align:right}
+.bd-mv .mv .c.up{color:#3ddc84}.bd-mv .mv .c.dn{color:#ff4d6d}.bd-mv .mv .c.fl{color:#9a8bb5}
+.brd-bar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:#140e1d;gap:2px}
+.brd-bar i{display:block;height:100%;min-width:2px;transition:flex-grow .6s}
+.brd-bar .u{background:#3ddc84}.brd-bar .f{background:#5b4f73}.brd-bar .d{background:#ff4d6d}
+.brd-n{display:flex;justify-content:space-between;margin-top:9px;font:700 11px/1 JBM,monospace;color:#9a8bb5}
+.brd-n .u{color:#3ddc84}.brd-n .d{color:#ff4d6d}
+.brd-avg{margin-top:12px;font:700 11px/1.4 JBM,monospace;color:#9a8bb5}.brd-avg b{font-size:18px;display:block;margin-top:4px}
+.brd-avg b.up{color:#3ddc84}.brd-avg b.dn{color:#ff4d6d}
+.ses-bar{position:relative;display:flex;height:14px;border-radius:4px;overflow:hidden;background:#140e1d;gap:2px}
+.ses-bar i{display:block;height:100%}.ses-bar .pre,.ses-bar .aft{background:#2c2140}.ses-bar .reg{background:#3a2a58}.ses-bar .reg.on{background:#1f7a4b}
+.ses-bar .now{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff1d6;box-shadow:0 0 0 2px #060409}
+.ses-l{display:flex;justify-content:space-between;margin-top:7px;font:700 9.5px/1 JBM,monospace;letter-spacing:.06em;color:#6c5e86}
+.ses-s{margin-top:10px;font:800 13px/1.35 JBM,monospace;color:#fff1d6}.ses-s em{display:block;font-style:normal;font-weight:600;font-size:11px;color:#9a8bb5;margin-top:3px}
+.bd-mapc{margin-top:10px}
+.bd-map{display:flex;flex-wrap:wrap;gap:2px;border-radius:6px;overflow:hidden}
+.bd-map .hm{position:relative;flex:1 1 auto;min-width:76px;height:66px;padding:9px 9px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:#fff;font:inherit;cursor:pointer;border:0;transition:filter .2s}
+.bd-map .hm:hover{filter:brightness(1.25)}
+.bd-map .hm b{font:800 12px/1 Unbounded,sans-serif;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-map .hm span{font:800 12px/1 JBM,monospace;opacity:.92}
+.bd-map .hm.big{height:96px}.bd-map .hm.big b{font-size:15px}.bd-map .hm.big span{font-size:14px}
+@media (max-width:1100px){.bd-floor{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.bd-floor{grid-template-columns:1fr}.bd-map .hm{min-width:64px;height:58px}.bd-map .hm.big{height:74px}}
+.ses-l{position:relative;display:block;height:12px}.ses-l span{position:absolute;top:0;transform:translateX(-50%)}.ses-l span:first-child{transform:none}.ses-l span:last-child{transform:translateX(-100%)}
+.bd-map .hm{height:auto;min-height:66px}.bd-map .hm.big{height:auto;min-height:96px}
+@media (max-width:700px){.bd-mv .mv{min-height:44px}.bd-map .hm{min-height:58px}.bd-map .hm.big{min-height:74px}}
 </style>
 </head>
 <body>
@@ -1246,6 +1283,13 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
         <div class="bd-led" aria-hidden="true"><div class="bd-led-in dot" id="bdLed"></div></div>
         <div class="bd-board" id="bdGrid"><div class="empty">opening the board…</div></div>
       </div>
+      <div class="bd-floor">
+        <div class="bd-card bd-mvc"><div class="bd-ch"><i class="u"></i>gainers</div><div class="bd-mv" id="bdUp"></div></div>
+        <div class="bd-card bd-mvc"><div class="bd-ch"><i class="d"></i>losers</div><div class="bd-mv" id="bdDn"></div></div>
+        <div class="bd-card bd-mvc"><div class="bd-ch"><i class="w"></i>deepest</div><div class="bd-mv" id="bdDeep"></div></div>
+        <div class="bd-card bd-side"><div class="bd-ch">breadth</div><div id="bdBreadth"></div><div class="bd-ch" style="margin-top:18px">new york session</div><div id="bdSess"></div></div>
+      </div>
+      <div class="bd-card bd-mapc"><div class="bd-ch">the market at a glance</div><div class="bd-map" id="bdMap"></div></div>
       <a class="bd-ipo" href="#city"><span class="bd-bell" aria-hidden="true">🔔</span><span><b>List your company</b><em>Every business in the city is a real coin. IPO one on pump.fun and ring the bell.</em></span><span class="ar">→</span></a>
     </div></section>
 
@@ -1454,6 +1498,6 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 <script src="/assets/js/receipt.js?v=b2"></script>
 <script src="/assets/js/bank.js?v=b2"></script>
 <script src="/assets/js/items.js?v=b1"></script>
-<script src="/assets/js/term.js?v=s5"></script>
+<script src="/assets/js/term.js?v=s8"></script>
 </body>
 </html>
